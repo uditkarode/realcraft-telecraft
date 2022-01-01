@@ -113,17 +113,17 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 					if (hoursPassed >= 24) hoursPassed -= 24
 
 					const emojiStr = (() => { if (hoursPassed >= 0 && hoursPassed < 6) {
-						return "🌌 __Midnight__";
+						return "🌌 <i>Midnight</i>";
 					} else if (hoursPassed >= 6 && hoursPassed < 7) {
-						return "🌄 __Early Morning__";
+						return "🌄 <i>Early Morning</i>";
 					} else if (hoursPassed >= 7 && hoursPassed < 12) {
-						return "🌅 __Day__";
+						return "🌅 <i>Day</i>";
 					} else if (hoursPassed >= 12 && hoursPassed < 17) {
-						return "🌇 __Noon__";
+						return "🌇 <i>Noon</i>";
 					} else if (hoursPassed >= 17 && hoursPassed < 19) {
-						return "🌅 __Evening__";
+						return "🌅 <i>Evening</i>";
 					} else if (hoursPassed >= 19 && hoursPassed < 24) {
-						return "🌃 __Night__";
+						return "🌃 <i>Night</i>";
 					}})()
 
 					const ln = (x: unknown) => `${x}`.length === 1 ? `0${x}` : x;
@@ -131,7 +131,7 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 					const isPm = hoursPassed >= 12;
 					if (isPm) hoursPassed -= 12;
 
-					ctx.reply(`${emojiStr}\n**Time**: ${ln(hoursPassed)}:${ln(minutesPassed)} ${isPm ? "PM" : "AM"}\n**Ticks**: ${v.ticks}`);
+					ctx.reply(`${emojiStr}\n<b>Time</b>: ${ln(hoursPassed)}:${ln(minutesPassed)} ${isPm ? "PM" : "AM"}\n<b>Ticks</b>: ${v.ticks}`, { parse_mode: "HTML" });
 				});
 			});
 
