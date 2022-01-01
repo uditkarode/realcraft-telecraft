@@ -94,18 +94,18 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 				server.send("time query daytime");
 
 				events.once("minecraft:time", v => {
-					let secondsPassed = parseInt(v.ticks) * 3.6;
+					let secondsPassed = Math.round(parseInt(v.ticks) * 3.6);
 					let minutesPassed = 0;
 					let hoursPassed = 0;
 
 					if (secondsPassed > 60) {
-						minutesPassed = secondsPassed / 60;
-						secondsPassed = secondsPassed % 60;
+						minutesPassed = Math.round(secondsPassed / 60);
+						secondsPassed = Math.round(secondsPassed % 60);
 					}
 
 					if (minutesPassed > 60) {
-						hoursPassed = minutesPassed / 60;
-						minutesPassed = minutesPassed % 60;
+						hoursPassed = Math.round(minutesPassed / 60);
+						minutesPassed = Math.round(minutesPassed % 60);
 					}
 
 					hoursPassed += 6;
