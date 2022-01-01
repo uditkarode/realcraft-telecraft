@@ -80,6 +80,11 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 
 			bot.command("chatid", ctx => ctx.reply(ctx.chat?.id?.toString()!));
 
+			bot.command("cli", ctx => {
+				if (ctx.from.username === "uditkarode")
+					server.send(ctx.message.text);
+			})
+
 			const players = {
 				init: false,
 				max: 0,
