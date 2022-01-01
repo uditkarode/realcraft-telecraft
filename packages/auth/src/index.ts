@@ -116,7 +116,11 @@ const auth: Plugin<
 			const opts = await authStore.get(user);
 			const cacheUser = authCache.get(user);
 
-			const mode = opts?.gameMode || authCache.get(user)?.gameMode;
+			// always set the game mode to survival
+			// since that is the desired outcome
+			// virtually all the time
+			const mode: gameModes = "survival";
+
 			const op = opts?.op || authCache.get(user)?.op;
 
 			cacheUser?.lockRef && clearInterval(cacheUser.lockRef);
