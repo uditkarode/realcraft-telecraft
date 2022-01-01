@@ -101,6 +101,9 @@ const V116 = {
 	started: function () {
 		return 'Done \\((?<ms>\\d+(\\.\\d+)?)s\\)! For help, type "help"';
 	},
+	time: function () {
+		return "The time is (?<ticks>.+)";
+	}
 };
 
 export const Vanilla = {

@@ -83,7 +83,52 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 			bot.command("cli", ctx => {
 				if (ctx.from.username === "uditkarode")
 					server.send(ctx.message.text);
-			})
+			});
+
+			bot.command("time", ctx => {
+				server.send("time query daytime");
+
+				events.once("minecraft:time", v => {
+					let secondsPassed = parseInt(v.ticks) * 3.6;
+					let minutesPassed = 0;
+					let hoursPassed = 0;
+
+					if (secondsPassed > 60) {
+						minutesPassed = secondsPassed / 60;
+						secondsPassed = secondsPassed % 60;
+					}
+
+					if (minutesPassed > 60) {
+						hoursPassed = minutesPassed / 60;
+						minutesPassed = minutesPassed % 60;
+					}
+
+					hoursPassed += 6;
+
+					if (hoursPassed >= 24) hoursPassed -= 24
+
+					const emojiStr = (() => { if (hoursPassed >= 0 && hoursPassed < 6) {
+						return "🌌 __Midnight__";
+					} else if (hoursPassed >= 6 && hoursPassed < 7) {
+						return "🌄 __Early Morning__";
+					} else if (hoursPassed >= 7 && hoursPassed < 12) {
+						return "🌅 __Day__";
+					} else if (hoursPassed >= 12 && hoursPassed < 17) {
+						return "🌇 __Noon__";
+					} else if (hoursPassed >= 17 && hoursPassed < 19) {
+						return "🌅 __Evening__";
+					} else if (hoursPassed >= 19 && hoursPassed < 24) {
+						return "🌃 __Night__";
+					}})()
+
+					const ln = (x: unknown) => `${x}`.length === 1 ? `0${x}` : x;
+
+					const isPm = hoursPassed >= 12;
+					if (isPm) hoursPassed -= 12;
+
+					ctx.reply(`${emojiStr}\n**Time**: ${ln(hoursPassed)}:${ln(minutesPassed)} ${isPm ? "PM" : "AM"}\n**Ticks**: ${v.ticks}`);
+				});
+			});
 
 			const players = {
 				init: false,
