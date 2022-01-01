@@ -22,7 +22,7 @@ export const deunionise = <T extends object>(t: T): Deunionise<T> => t;
 
 const commandRegex = "^/(?<cmd>[a-zA-Z0-9_]+)";
 
-type CommandText = `/${string}`;
+export type CommandText = `/${string}`;
 
 export const isCommand = (s: string): s is CommandText =>
 	Boolean(s.match(new RegExp(commandRegex)));

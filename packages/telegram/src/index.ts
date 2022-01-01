@@ -16,6 +16,7 @@ import {
 	deunionise,
 	isCommand,
 	parseCommand,
+	CommandText,
 } from "./utils";
 
 const pkg = require("../package.json") as { name: string; version: string };
@@ -81,8 +82,8 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 			bot.command("chatid", ctx => ctx.reply(ctx.chat?.id?.toString()!));
 
 			bot.command("cli", ctx => {
-				if (ctx.from.username === "uditkarode")
-					server.send(ctx.message.text);
+				if (ctx.from.username === "uditkarode") 
+					server.send(parseCommand(ctx.message.text as CommandText).value);
 			});
 
 			bot.command("time", ctx => {
