@@ -82,8 +82,12 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 			bot.command("chatid", ctx => ctx.reply(ctx.chat?.id?.toString()!));
 
 			bot.command("cli", ctx => {
-				if (ctx.from.username === "uditkarode") 
+				if (ctx.from.username === "uditkarode") {
 					server.send(parseCommand(ctx.message.text as CommandText).value);
+					ctx.reply("Command sent to server");
+				} else {
+					ctx.reply("I've never seen this person in my life");
+				}
 			});
 
 			bot.command("time", ctx => {
