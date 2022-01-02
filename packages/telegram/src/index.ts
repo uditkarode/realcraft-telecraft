@@ -92,46 +92,59 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 
 			bot.command("time", ctx => {
 				server.send("time query daytime");
+				const r = Math.round;
 
-				events.once("minecraft:time", v => {
-					let secondsPassed = Math.round(parseInt(v.ticks) * 3.6);
-					let minutesPassed = 0;
-					let hoursPassed = 0;
+				events.once("minecraft:time", captures => {
+					const ticks = parseInt(captures.ticks);
 
-					if (secondsPassed > 60) {
-						minutesPassed = Math.round(secondsPassed / 60);
-						secondsPassed = Math.round(secondsPassed % 60);
-					}
+					type Acc = [number[], number];
 
-					if (minutesPassed > 60) {
-						hoursPassed = Math.round(minutesPassed / 60);
-						minutesPassed = Math.round(minutesPassed % 60);
-					}
+					// one in-game tick is 3.6 in-game seconds
+					const [seconds, minutes, rawHours] = [r(ticks * 3.6), 0, 0].reduce(
+						(acc, curr) => {
+							// add carry
+							curr += acc[1];
 
-					hoursPassed += 6;
+							return (
+								curr < 60
+									? [[...acc[0], curr], 0]
+									: [[...acc[0], r(curr / 60)], r(curr % 60)]
+							) as Acc;
+						},
+						[[], 0] as Acc,
+					)[0];
 
-					if (hoursPassed >= 24) hoursPassed -= 24
+					// tick 0 is at 6am, and hours go up to 30
+					const hours = rawHours >= 18 ? rawHours - 18 : rawHours + 6;
 
-					const emojiStr = (() => { if (hoursPassed >= 0 && hoursPassed < 6) {
-						return "🌌 <i>Midnight</i>";
-					} else if (hoursPassed >= 6 && hoursPassed < 7) {
-						return "🌄 <i>Early Morning</i>";
-					} else if (hoursPassed >= 7 && hoursPassed < 12) {
-						return "🌅 <i>Day</i>";
-					} else if (hoursPassed >= 12 && hoursPassed < 17) {
-						return "🌇 <i>Noon</i>";
-					} else if (hoursPassed >= 17 && hoursPassed < 19) {
-						return "🌅 <i>Evening</i>";
-					} else if (hoursPassed >= 19 && hoursPassed < 24) {
-						return "🌃 <i>Night</i>";
-					}})()
+					const ln = (x: unknown) => (`${x}`.length === 1 ? `0${x}` : x);
+					const range = (l: number, g: number) => hours >= l && hours < g;
+					const it = (v: string) => `<i>${v}</i>`;
 
-					const ln = (x: unknown) => `${x}`.length === 1 ? `0${x}` : x;
+					const emojiStr = (() => {
+						if (range(0, 6)) {
+							return `🌌 ${it("Midnight")}`;
+						} else if (range(6, 7)) {
+							return `🌄 ${it("Early Morning")}`;
+						} else if (range(7, 12)) {
+							return `🌅 ${it("Morning")}`;
+						} else if (range(12, 17)) {
+							return `🌇 ${it("Noon")}`;
+						} else if (range(17, 19)) {
+							return `🌅 ${it("Evening")}`;
+						} else if (range(19, 24)) {
+							return `🌃 ${it("Night")}`;
+						}
+					})();
 
-					const isPm = hoursPassed >= 12;
-					if (isPm) hoursPassed -= 12;
-
-					ctx.reply(`${emojiStr}\n<b>Time</b>: ${ln(hoursPassed)}:${ln(minutesPassed)} ${isPm ? "PM" : "AM"}\n<b>Ticks</b>: ${v.ticks}`, { parse_mode: "HTML" });
+					ctx.reply(
+						`${emojiStr}\n<b>Time</b>: ${ln(
+							hours > 12 ? hours - 12 : hours,
+						)}:${ln(minutes)} ${hours >= 12 ? "PM" : "AM"}\n<b>Ticks</b>: ${
+							captures.ticks
+						}`,
+						{ parse_mode: "HTML" },
+					);
 				});
 			});
 
@@ -325,27 +338,25 @@ const Telegram: Plugin<Opts, [], messenger["exports"]> = opts => {
 				const thisType = handledTypes.find(type => msg && type in msg);
 				if (thisType === "text") return msg && deunionise(msg)?.text;
 				if (thisType)
-					return captionMedia(
-						thisType.split("_").join(" ").toUpperCase(),
-						msg,
-					);
+					return captionMedia(thisType.split("_").join(" ").toUpperCase(), msg);
 			};
 
 			const handler: Middleware<Context> = (ctx, next) => {
 				const isLinkedGroup = String(ctx.message?.chat.id) === opts.chatId;
 				const isBotPM = ctx.message?.chat.type === "private";
 				const messageText = getCaptioned(ctx.message) || "";
-				const isMessageCommand = typeof messageText == "string" && isCommand(messageText);
+				const isMessageCommand =
+					typeof messageText == "string" && isCommand(messageText);
 
-				if(isMessageCommand) {
+				if (isMessageCommand) {
 					// commands can be from either PM or linked group
-					if(!(isLinkedGroup || isBotPM)) return next();
+					if (!(isLinkedGroup || isBotPM)) return next();
 				} else {
-					 // regular texts must be from linked group
-					if(!isLinkedGroup || isBotPM) return next();
+					// regular texts must be from linked group
+					if (!isLinkedGroup || isBotPM) return next();
 					// if it's indeed from the linked group but
 					// no players are online, don't relay
-					else if(players.list.length < 1) return next();
+					else if (players.list.length < 1) return next();
 				}
 
 				const reply = ctx.message && deunionise(ctx.message)?.reply_to_message;
